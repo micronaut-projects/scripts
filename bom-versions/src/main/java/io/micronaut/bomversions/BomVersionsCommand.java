@@ -64,13 +64,20 @@ public class BomVersionsCommand implements Runnable {
         return name;
     }
 
+    private boolean isVersionDefinition(String line) {
+        return line.contains(" = ") && !line.contains("module");
+    }
+
     public void run(File f) {
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String prefix = "managed-micronaut";
-                if (line.startsWith(prefix) && line.contains(" = ") && !line.contains("module")) {
-                    String projectName = line.substring("managed-".length(), line.indexOf(" = \""));
+                String managedPrefix = "managed-micronaut";
+                String parentPrefix = "parent-micronaut-maven-plugin";
+                if ((line.startsWith(managedPrefix) || line.startsWith(parentPrefix)) && isVersionDefinition(line)) {
+                    String projectName = line.startsWith(managedPrefix)
+                            ? line.substring("managed-".length(), line.indexOf(" = \""))
+                            : "micronaut-maven-plugin";
                     String version = line.substring(line.indexOf(" = \"") + " = \"".length()).replaceAll("\"", "");
                     Project project = new Project(projectName, version);
                     String name = cleanupName(project);
