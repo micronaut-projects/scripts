@@ -1,0 +1,6 @@
+applicationType: cli
+defaultPackage: japicmp
+testFramework: junit
+sourceLanguage: kotlin
+buildTool: gradle_kotlin
+features: [app-name, gradle, http-client-test, junit, kotlin, ksp, logback, micronaut-build, picocli, picocli-junit, picocli-kotlin-application, properties, readme, serialization-jackson, shade]
