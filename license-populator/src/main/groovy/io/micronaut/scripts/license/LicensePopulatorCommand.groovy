@@ -22,7 +22,6 @@ class LicensePopulatorCommand implements Runnable {
     @Option(names = ['-f', '--folder'], description = 'source code folder', defaultValue = '/Users/sdelamo/github/micronaut-projects/micronaut-guides/guides/')
     String folder
 
-
     static void main(String[] args) throws Exception {
         PicocliRunner.run(LicensePopulatorCommand.class, args)
     }
@@ -30,12 +29,12 @@ class LicensePopulatorCommand implements Runnable {
     void run() {
         File dir = new File(folder)
         if (!dir.exists()) {
-            println "Folder " + folder + " does not exists"
+            println "Folder " + folder + " does not exist"
             return
         }
         File licenseHeaderFile = new File(headerFile)
         if (!licenseHeaderFile.exists()) {
-            println "License Header file " + headerFile + " does not exists"
+            println "License Header file " + headerFile + " does not exist"
             return
         }
         String licenseHeaderText = licenseHeaderFile.text
