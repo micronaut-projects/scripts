@@ -3,6 +3,7 @@ package japicmp
 import io.micronaut.configuration.picocli.PicocliRunner
 import java.io.File
 import org.jsoup.Jsoup
+import picocli.CommandLine
 import picocli.CommandLine.Command
 
 @Command(
@@ -11,8 +12,13 @@ import picocli.CommandLine.Command
 )
 class JapicmpCommand : Runnable {
 
+    @field:CommandLine.Option(names = ["-d", "--directory"], description = ["Root to the directory to scan for japicmp reports"], defaultValue = ".")
+    lateinit var rootLocation: String
+
     override fun run() {
-        val reports = File("/Users/tim/Code/GitHub/micronaut-projects/micronaut-aws")
+        val location = File(rootLocation)
+        println("Scanning ${location.absolutePath} for japicmp reports")
+        val reports = location
             .walk()
             .filter {
                 it.name == "reports" && it.isDirectory && it.parentFile.name == "build"
