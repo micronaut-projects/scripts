@@ -3,8 +3,8 @@ package japicmp
 import io.micronaut.configuration.picocli.PicocliRunner
 import java.io.File
 import org.jsoup.Jsoup
-import picocli.CommandLine
 import picocli.CommandLine.Command
+import picocli.CommandLine.Option
 
 @Command(
     name = "japicmp", description = ["..."],
@@ -12,7 +12,7 @@ import picocli.CommandLine.Command
 )
 class JapicmpCommand : Runnable {
 
-    @field:CommandLine.Option(names = ["-d", "--directory"], description = ["Root to the directory to scan for japicmp reports"], defaultValue = ".")
+    @field:Option(names = ["-d", "--directory"], description = ["Root to the directory to scan for japicmp reports"], defaultValue = ".")
     lateinit var rootLocation: String
 
     override fun run() {
