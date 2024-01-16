@@ -7,16 +7,16 @@ import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 
 @Command(
-    name = "japicmp", description = ["..."],
+    name = "japicmp", description = ["Scans the parent project directory for japicmp reports and outputs the errors to be placed in the accepted-api-changes json file"],
     mixinStandardHelpOptions = true
 )
 class JapicmpCommand : Runnable {
 
-    @field:Option(names = ["-d", "--directory"], description = ["Root to the directory to scan for japicmp reports"], defaultValue = ".")
-    lateinit var rootLocation: String
+    @Option(names = ["-d", "--directory"], required = false, description = ["Root to the directory to scan for japicmp reports"])
+    var rootLocation: String = "."
 
     override fun run() {
-        val location = File(rootLocation)
+        val location = File(rootLocation).absoluteFile
         println("Scanning ${location.absolutePath} for japicmp reports")
         val reports = location
             .walk()

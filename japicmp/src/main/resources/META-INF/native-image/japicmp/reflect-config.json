@@ -2,5 +2,15 @@
   {
     "name": "japicmp.JapicmpCommand",
     "allPublicConstructors": true
+  },
+  {
+    "name" : "japicmp.JapicmpCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "rootLocation" }
+    ]
   }
 ]
