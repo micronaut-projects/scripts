@@ -15,19 +15,34 @@ class JapicmpCommand : Runnable {
     @Option(names = ["-d", "--directory"], required = false, description = ["Root to the directory to scan for japicmp reports"])
     var rootLocation: String = "."
 
+    @Option(names = ["-v", "--verbose"], required = false, description = ["Verbose output"])
+    var verbose = false
+
     override fun run() {
         val location = File(rootLocation).absoluteFile
         println("Scanning ${location.absolutePath} for japicmp reports")
         val reports = location
             .walk()
             .filter {
+                if (verbose) {
+                    println("Checking ${it.absolutePath}")
+                }
                 it.name == "reports" && it.isDirectory && it.parentFile.name == "build"
             }
             .map {
-                File(it, "binary-compatibility-micronaut-${it.parentFile.parentFile.name}.html")
+                listOf(
+                    File(it, "binary-compatibility-micronaut-${it.parentFile.parentFile.name}.html"),
+                    File(it, "binary-compatibility-${it.parentFile.parentFile.name}.html")
+                )
+                    .find { f -> f.exists() }
             }
-            .filter { it.exists() }
-            .flatMap { Jsoup.parse(it).select(".severity-error pre").map { it.text() } }
+            .filterNotNull()
+            .flatMap {
+                if (verbose) {
+                    println("Parsing ${it.absolutePath}")
+                }
+                Jsoup.parse(it).select(".severity-error pre").map { it.text() }
+            }
             .filter { it.isNotEmpty() }
             .joinToString(",\n")
         if (reports.isNotEmpty()) {

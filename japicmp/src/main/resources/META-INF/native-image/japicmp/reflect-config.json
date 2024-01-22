@@ -10,7 +10,8 @@
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
     "fields" : [
-      { "name" : "rootLocation" }
+      { "name" : "rootLocation" },
+      { "name" : "verbose" }
     ]
   }
 ]
