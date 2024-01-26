@@ -1,0 +1,14 @@
+[
+  {
+    "name": "platform.aligner.PlatformAlignerCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "platformLocation" },
+      { "name" : "moduleLocation" },
+      { "name" : "platformVersion" }
+    ]
+  }
+]
