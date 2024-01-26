@@ -34,7 +34,7 @@ class PlatformAlignerCommand : Runnable, IVersionProvider {
         names = ["-m", "--module"],
         description = ["the location of the module to check (defaults to the current directory)"]
     )
-    private var projectLocation: String = "."
+    private var moduleLocation: String = "."
 
     @Option(
         names = ["-v", "--platformversion"],
@@ -46,15 +46,15 @@ class PlatformAlignerCommand : Runnable, IVersionProvider {
         val mapper = TomlMapper()
         val platformFile = File(platformLocation).canonicalFile.toPath()
         val platformVersionFile = platformFile.resolve(GRADLE_LIBS_VERSIONS_TOML)
-        val projectFile = File(projectLocation).canonicalFile.toPath()
-        val projectVersionFile = projectFile.resolve(GRADLE_LIBS_VERSIONS_TOML)
+        val moduleFile = File(moduleLocation).canonicalFile.toPath()
+        val moduleVersionFile = moduleFile.resolve(GRADLE_LIBS_VERSIONS_TOML)
 
         if (platformVersionFile.exists().not()) {
             println(red("⚠️ Could not find platform versions in ${platformVersionFile.toAbsolutePath()}"))
             exitProcess(1)
         }
-        if (projectVersionFile.exists().not()) {
-            println(red("⚠️ Could not find project versions in ${projectVersionFile.toAbsolutePath()}"))
+        if (moduleVersionFile.exists().not()) {
+            println(red("⚠️ Could not find project versions in ${moduleVersionFile.toAbsolutePath()}"))
             exitProcess(1)
         }
 
@@ -62,16 +62,16 @@ class PlatformAlignerCommand : Runnable, IVersionProvider {
         val platformBomVersions = parseBomVersions(mapper, platformVersionFile).toMutableMap().plus(
             "io.micronaut.platform:micronaut-platform" to (platformVersion ?: platformVersionFromFile.replace("-SNAPSHOT", ""))
         ).toMap()
-        val projectBomVersions = parseBomVersions(mapper, projectVersionFile)
+        val moduleBomVersions = parseBomVersions(mapper, moduleVersionFile)
 
         println(green("------------------------------------------------------------"))
         println(bold("  Platform version : ${yellow(platformVersionFromFile)}"))
-        println(bold("  Project version  : ${yellow(readVersion(projectFile))}"))
+        println(bold("  Module version  : ${yellow(readVersion(moduleFile))}"))
         println(green("------------------------------------------------------------"))
         println()
 
         // Find project versions that differ from those in the platform
-        val differentVersions = projectBomVersions
+        val differentVersions = moduleBomVersions
             .filter { platformBomVersions.containsKey(it.key) }
             .filter { platformBomVersions[it.key] != it.value }
 
@@ -82,32 +82,32 @@ class PlatformAlignerCommand : Runnable, IVersionProvider {
             // For each bom that has a different version, find the name of the version in the project.
             // Apart from logging and test, the names are technically free-form, so we cannot assume
             val versionsAndNames =
-                differentVersions.map { (k, v) -> k to (v to versionNameForBom(mapper, projectVersionFile, k)) }.toMap()
+                differentVersions.map { (k, v) -> k to (v to versionNameForBom(mapper, moduleVersionFile, k)) }.toMap()
 
-            var projectLibsVersions = projectVersionFile.readText()
+            var moduleLibsVersionFileContents = moduleVersionFile.readText()
             versionsAndNames.forEach {
                 println("${it.value.second} (${yellow(it.key)}) : ${bold(it.value.first)} -> ${bold(platformBomVersions[it.key] ?: "error")}")
-                projectLibsVersions = replace(it.value.second, it.key, projectLibsVersions, platformBomVersions)
+                moduleLibsVersionFileContents = replace(it.value.second, it.key, moduleLibsVersionFileContents, platformBomVersions)
             }
             println()
 
             // Logging and Test are different
-            projectLibsVersions = replace(
+            moduleLibsVersionFileContents = replace(
                 "micronaut-test",
                 "io.micronaut.test:micronaut-test-bom",
-                projectLibsVersions,
+                moduleLibsVersionFileContents,
                 platformBomVersions
             )
-            projectLibsVersions = replace(
+            moduleLibsVersionFileContents = replace(
                 "micronaut-logging",
                 "io.micronaut.logging:micronaut-logging-bom",
-                projectLibsVersions,
+                moduleLibsVersionFileContents,
                 platformBomVersions
             )
 
             // Write the text back over the libs.versions.toml file
-            projectVersionFile.apply {
-                writeText(projectLibsVersions)
+            moduleVersionFile.apply {
+                writeText(moduleLibsVersionFileContents)
                 println(bold(green("Updated $this")))
             }
         } else {
@@ -118,10 +118,10 @@ class PlatformAlignerCommand : Runnable, IVersionProvider {
     private fun replace(
         versionName: String,
         bom: String,
-        projectLibsVersions: String,
+        moduleLibsVersionFileContents: String,
         platformBomVersions: Map<String, String>
     ) =
-        projectLibsVersions.replace(
+        moduleLibsVersionFileContents.replace(
             Regex("""$versionName\s*=\s*["'].+?["']"""),
             """$versionName = "${platformBomVersions[bom]}""""
         )

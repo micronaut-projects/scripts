@@ -7,7 +7,7 @@
     "allPublicMethods" : true,
     "fields" : [
       { "name" : "platformLocation" },
-      { "name" : "projectLocation" },
+      { "name" : "moduleLocation" },
       { "name" : "platformVersion" }
     ]
   }
