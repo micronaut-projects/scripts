@@ -153,7 +153,7 @@ class PlatformAlignerCommand : Runnable, IVersionProvider {
                 .filter {
                     // Only keep those that are a micronaut bom, or the platform bom
                     (it.value as Map<*, *>)["module"].toString()
-                        .matches(Regex("""(io\.micronaut.+?:micronaut.+?bom|io\.micronaut\.platform:micronaut-platform)"""))
+                        .matches(Regex("""(io\.micronaut.*?:micronaut.+?bom|io\.micronaut\.platform:micronaut-platform)"""))
                 }
                 .associate {
                     (it.value as Map<*, *>).let { map ->
