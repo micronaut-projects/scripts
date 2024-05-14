@@ -1,0 +1,6 @@
+applicationType: cli
+defaultPackage: scraper
+testFramework: spock
+sourceLanguage: groovy
+buildTool: gradle_kotlin
+features: [app-name, gradle, groovy, http-client-test, logback, micronaut-build, picocli, picocli-groovy-application, picocli-spock, properties, readme, serialization-jackson, shade, spock]
