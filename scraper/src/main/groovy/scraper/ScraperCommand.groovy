@@ -145,7 +145,7 @@ class ScraperCommand implements Runnable {
                         }
                 )
                 // Write source (stripping off the base URL but not the absolute slash)
-                targetFile << source
+                targetFile.text = source
                         .replace('"' + baseUrl[0..-2] + '"', '"/"')
                         .replace('"' + baseUrl[0..-2], '"')
                         .replace("'${baseUrl[0..-2]}'", "'/'")
