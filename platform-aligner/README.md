@@ -8,6 +8,22 @@ The application provides three command-line options:
 
 It compares versions in the module with those found in the platform, and updates the module's `gradle/libs.versions.toml` file with the version from platform if they differ.
 
+## Building this tool
+
+Run
+
+```
+./gradlew nativeCompile
+```
+
+Copy the native binary from `build/native/nativeCompile/platform-aligner` to a known location or in your path, ie:
+
+```shell
+cp build/native/nativeCompile/platform-aligner ~/bin/platform-aligner
+```
+
+
+
 ### Example
 
 This example uses the native binary (generated via `./gradlew nativeCompile) and assumes
