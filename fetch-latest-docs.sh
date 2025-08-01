@@ -72,4 +72,30 @@ yq eval '.. | select(has("slug")) | .slug' "$INPUT_YAML" | while read -r slug; d
   rm -rf "$TMP_DIR"
 done
 
+############################################
+# Step 3: Process graal-io-website GDK modules
+############################################
+
+echo "🧩 Processing GDK Guides"
+
+TMP_GDK_DIR=$(mktemp -d)
+
+git clone --quiet --depth 1 --branch master "https://github.com/graalvm/graal-io-website.git" "$TMP_GDK_DIR"
+
+GDK_MODULES_DIR="$TMP_GDK_DIR/gdk/gdk-modules"
+GDK_OUTPUT_DIR="$OUTPUT_DIR/gdk-guides"
+mkdir -p "$GDK_OUTPUT_DIR"
+
+find "$GDK_MODULES_DIR" -type f -name index.html | while read -r index_file; do
+  MODULE_DIR=$(dirname "$index_file")
+  MODULE_NAME=$(basename "$MODULE_DIR")
+
+  DEST_FILE="$GDK_OUTPUT_DIR/${MODULE_NAME}.html"
+  cp "$index_file" "$DEST_FILE"
+
+  echo "✅ Copied $MODULE_NAME/index.html to $DEST_FILE"
+done
+
+rm -rf "$TMP_GDK_DIR" "$TMP_GDK_GIT"
+
 echo "🎉 All done."
