@@ -18,36 +18,49 @@ fi
 mkdir -p "$OUTPUT_DIR"
 
 ############################################
-# Step 1: Process micronaut-guides first
+# Step 1: Process all repositories from YAML
 ############################################
 
-echo "📚 Processing micronaut-guides"
+echo "📄 Parsing YAML and cloning repositories..."
 
-TMP_GUIDES_DIR=$(mktemp -d)
-git clone --quiet --depth 1 --branch gh-pages "https://github.com/micronaut-projects/micronaut-guides.git" "$TMP_GUIDES_DIR"
+yq eval '.. | select(has("slug")) | .slug' "$INPUT_YAML" | while read -r slug; do
+  echo "🔍 Processing $slug"
 
-GUIDES_LATEST="$TMP_GUIDES_DIR/latest"
-GUIDES_DEST="$OUTPUT_DIR/micronaut-guides"
-mkdir -p "$GUIDES_DEST"
+  TMP_DIR=$(mktemp -d)
+  git clone --quiet --depth 1 --branch gh-pages "https://github.com/micronaut-projects/$slug.git" "$TMP_DIR"
 
-echo "🔎 Copying filtered HTML files (groovy, java, kotlin)..."
+  [ "$slug" = "micronaut-gradle-plugin" ] && GUIDE_PATH="/latest" || GUIDE_PATH="/latest/guide"
+  GUIDE_DIR="${TMP_DIR}${GUIDE_PATH}"
 
-find "$GUIDES_LATEST" -maxdepth 1 -type f \( \
-  -name "*-groovy.html" -o \
-  -name "*-java.html" -o \
-  -name "*-kotlin.html" \
-\) | while read -r html_file; do
-  cp "$html_file" "$GUIDES_DEST/"
-  echo "✅ Copied $(basename "$html_file") to $GUIDES_DEST/"
-  # Generate metadata.json
-  filename=$(basename "$html_file")
-  metadata_file="$GUIDES_DEST/${filename}.metadata.json"
-  url="https://guides.micronaut.io/latest/${filename}"
-  echo "{\"metadataAttributes\":{\"customized_url_source\":\"$url\"}}" > "$metadata_file"
-  echo "📝 Created metadata for $filename"
+  DEST_DIR="$OUTPUT_DIR/$slug"
+  mkdir -p "$DEST_DIR"
+
+  # Copy only .html files recursively, preserving directory structure.
+  API_SRC_DIR="${TMP_DIR}/latest"
+  find "$API_SRC_DIR/api" -type f -name "*.html" | while read -r src_file; do
+    rel_path="${src_file#$API_SRC_DIR/}"        # relative to $API_SRC_DIR
+    dest_file="$DEST_DIR/$rel_path"         # destination path
+    mkdir -p "$(dirname "$dest_file")"
+    cp "$src_file" "$dest_file"
+  done
+
+  for file in index.html configurationreference.html; do
+    SRC="$GUIDE_DIR/$file"
+    if [[ -f "$SRC" ]]; then
+      cp "$SRC" "$DEST_DIR/"
+      echo "✅ Copied $file to $DEST_DIR/"
+      # Generate metadata.json
+      metadata_file="$DEST_DIR/${file}.metadata.json"
+      url="https://micronaut-projects.github.io/${slug}${GUIDE_PATH}/${file}"
+      echo "{\"metadataAttributes\":{\"customized_url_source\":\"$url\"}}" > "$metadata_file"
+      echo "📝 Created metadata for $file"
+    else
+      echo "⚠️  Warning: $file not found in $slug"
+    fi
+  done
+
+  rm -rf "$TMP_DIR"
 done
-
-rm -rf "$TMP_GUIDES_DIR"
 
 ############################################
 # Step 2: Process all repositories from YAML
@@ -81,38 +94,36 @@ done
 rm -rf "$TMP_DOCS_DIR"
 
 ############################################
-# Step 3: Process all repositories from YAML
+# Step 3: Process micronaut-guides first
 ############################################
 
-echo "📄 Parsing YAML and cloning repositories..."
+echo "📚 Processing micronaut-guides"
 
-yq eval '.. | select(has("slug")) | .slug' "$INPUT_YAML" | while read -r slug; do
-  echo "🔍 Processing $slug"
+TMP_GUIDES_DIR=$(mktemp -d)
+git clone --quiet --depth 1 --branch gh-pages "https://github.com/micronaut-projects/micronaut-guides.git" "$TMP_GUIDES_DIR"
 
-  TMP_DIR=$(mktemp -d)
-  git clone --quiet --depth 1 --branch gh-pages "https://github.com/micronaut-projects/$slug.git" "$TMP_DIR"
+GUIDES_LATEST="$TMP_GUIDES_DIR/latest"
+GUIDES_DEST="$OUTPUT_DIR/micronaut-guides"
+mkdir -p "$GUIDES_DEST"
 
-  GUIDE_DIR="$TMP_DIR/latest/guide"
-  DEST_DIR="$OUTPUT_DIR/$slug"
-  mkdir -p "$DEST_DIR"
+echo "🔎 Copying filtered HTML files (groovy, java, kotlin)..."
 
-  for file in index.html configurationreference.html; do
-    SRC="$GUIDE_DIR/$file"
-    if [[ -f "$SRC" ]]; then
-      cp "$SRC" "$DEST_DIR/"
-      echo "✅ Copied $file to $DEST_DIR/"
-      # Generate metadata.json
-      metadata_file="$DEST_DIR/${file}.metadata.json"
-      url="https://micronaut-projects.github.io/${slug}/latest/guide/${file}"
-      echo "{\"metadataAttributes\":{\"customized_url_source\":\"$url\"}}" > "$metadata_file"
-      echo "📝 Created metadata for $file"
-    else
-      echo "⚠️  Warning: $file not found in $slug"
-    fi
-  done
-
-  rm -rf "$TMP_DIR"
+find "$GUIDES_LATEST" -maxdepth 1 -type f \( \
+  -name "*-groovy.html" -o \
+  -name "*-java.html" -o \
+  -name "*-kotlin.html" \
+\) | while read -r html_file; do
+  cp "$html_file" "$GUIDES_DEST/"
+  echo "✅ Copied $(basename "$html_file") to $GUIDES_DEST/"
+  # Generate metadata.json
+  filename=$(basename "$html_file")
+  metadata_file="$GUIDES_DEST/${filename}.metadata.json"
+  url="https://guides.micronaut.io/latest/${filename}"
+  echo "{\"metadataAttributes\":{\"customized_url_source\":\"$url\"}}" > "$metadata_file"
+  echo "📝 Created metadata for $filename"
 done
+
+rm -rf "$TMP_GUIDES_DIR"
 
 ############################################
 # Step 4: Process graal-io-website GDK modules
