@@ -53,6 +53,37 @@ rm -rf "$TMP_GUIDES_DIR"
 # Step 2: Process all repositories from YAML
 ############################################
 
+echo "📄 cloning micronaut-docs repository"
+
+TMP_DOCS_DIR=$(mktemp -d)
+git clone --quiet --depth 1 --branch gh-pages "https://github.com/micronaut-projects/micronaut-docs.git" "$TMP_DOCS_DIR"
+
+DOCS_LATEST="$TMP_DOCS_DIR/latest/guide"
+DOCS_DEST="$OUTPUT_DIR/micronaut-core"
+
+mkdir -p "$DOCS_DEST"
+
+for file in index.html configurationreference.html; do
+  SRC="$DOCS_LATEST/$file"
+  if [[ -f "$SRC" ]]; then
+    cp "$SRC" "$DOCS_DEST/"
+    echo "✅ Copied $file to $DOCS_DEST/"
+    # Generate metadata.json
+    metadata_file="$DOCS_DEST/${file}.metadata.json"
+    url="https://docs.micronaut.io/latest/guide/${file}"
+    echo "{\"metadataAttributes\":{\"customized_url_source\":\"$url\"}}" > "$metadata_file"
+    echo "📝 Created metadata for $file"
+  else
+      echo "⚠️  Warning: $file not found"
+  fi
+done
+
+rm -rf "$TMP_DOCS_DIR"
+
+############################################
+# Step 3: Process all repositories from YAML
+############################################
+
 echo "📄 Parsing YAML and cloning repositories..."
 
 yq eval '.. | select(has("slug")) | .slug' "$INPUT_YAML" | while read -r slug; do
@@ -84,7 +115,7 @@ yq eval '.. | select(has("slug")) | .slug' "$INPUT_YAML" | while read -r slug; d
 done
 
 ############################################
-# Step 3: Process graal-io-website GDK modules
+# Step 4: Process graal-io-website GDK modules
 ############################################
 
 echo "🧩 Processing GDK Guides"
@@ -107,9 +138,19 @@ find "$GDK_MODULES_DIR" -type f -name index.html | while read -r index_file; do
   echo "✅ Copied $MODULE_NAME/index.html to $DEST_FILE"
   # Generate metadata.json
   metadata_file="$GDK_OUTPUT_DIR/${MODULE_NAME}.html.metadata.json"
-  url="https://graalvm.github.io/graal-io-website/gdk/gdk-modules/${MODULE_NAME}/index.html"
-  echo "{\"metadataAttributes\":{\"customized_url_source\":\"$url\"}}" > "$metadata_file"
-  echo "📝 Created metadata for ${MODULE_NAME}.html"
+
+
+  case "$MODULE_DIR" in
+    *gdk-modules/*)
+      REL="gdk-modules/${MODULE_DIR#*gdk-modules/}"
+      url="https://graal.cloud/gdk/${REL}/"
+      echo "{\"metadataAttributes\":{\"customized_url_source\":\"$url\"}}" > "$metadata_file"
+      echo "📝 Created metadata for ${MODULE_NAME}.html"
+      ;;
+    *)
+      echo "gdk-modules/ not found in MODULE_DIR" >&2
+      ;;
+  esac
 done
 
 rm -rf "$TMP_GDK_DIR"
