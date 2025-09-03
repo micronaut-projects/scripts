@@ -17,6 +17,38 @@ fi
 
 mkdir -p "$OUTPUT_DIR"
 
+#echo "📄 Processing OCI Micronaut Documentation..."
+#
+#OCI_MICRONAUT_DIR="/Users/sdelamo/scm/oci-micronaut/micronaut-oci-service-root/build/docs"
+#DEST_DIR="$OUTPUT_DIR/oci-micronaut"
+#GUIDE_PATH="/guide"
+#GUIDE_DIR="${OCI_MICRONAUT_DIR}${GUIDE_PATH}"
+#mkdir -p "$DEST_DIR"
+#find "$OCI_MICRONAUT_DIR/api" -type f -name "*.html" | while read -r src_file; do
+#  rel_path="${src_file#$OCI_MICRONAUT_DIR/}"
+#  dest_file="$DEST_DIR/$rel_path"
+#  mkdir -p "$(dirname "$dest_file")"
+#  cp "$src_file" "$dest_file"
+#  pathToApiHtmlFile="$rel_path"
+#  url="https://docs.gcn.oraclecorp.com/pegasus/latest/${pathToApiHtmlFile}"
+#  metadata_file="${dest_file}.metadata.json"
+#  echo "{\"metadataAttributes\":{\"customized_url_source\":\"$url\"}}" > "$metadata_file"
+#done
+#for file in index.html configurationreference.html; do
+#  SRC="$GUIDE_DIR/$file"
+#  if [[ -f "$SRC" ]]; then
+#    cp "$SRC" "$DEST_DIR/"
+#    echo "✅ Copied $file to $DEST_DIR/"
+#    # Generate metadata.json
+#    metadata_file="$DEST_DIR/${file}.metadata.json"
+#    url="https://docs.gcn.oraclecorp.com/pegasus/latest/guide/${file}"
+#    echo "{\"metadataAttributes\":{\"customized_url_source\":\"$url\"}}" > "$metadata_file"
+#    echo "📝 Created metadata for $file"
+#  else
+#    echo "⚠️  Warning: $file not found in $slug"
+#  fi
+#done
+
 ############################################
 # Step 1: Process all repositories from YAML
 ############################################
@@ -24,6 +56,11 @@ mkdir -p "$OUTPUT_DIR"
 echo "📄 Parsing YAML and cloning repositories..."
 
 yq eval '.. | select(has("slug")) | .slug' "$INPUT_YAML" | while read -r slug; do
+  # Skip micronaut-maven-plugin
+  if [[ "$slug" == "micronaut-maven-plugin" ]]; then
+    echo "⏩ Skipping $slug"
+    continue
+  fi
   echo "🔍 Processing $slug"
 
   TMP_DIR=$(mktemp -d)
@@ -35,14 +72,23 @@ yq eval '.. | select(has("slug")) | .slug' "$INPUT_YAML" | while read -r slug; d
   DEST_DIR="$OUTPUT_DIR/$slug"
   mkdir -p "$DEST_DIR"
 
-  # Copy only .html files recursively, preserving directory structure.
+
+  # Copy Javadoc HTML
   API_SRC_DIR="${TMP_DIR}/latest"
-  find "$API_SRC_DIR/api" -type f -name "*.html" | while read -r src_file; do
-    rel_path="${src_file#$API_SRC_DIR/}"        # relative to $API_SRC_DIR
-    dest_file="$DEST_DIR/$rel_path"         # destination path
-    mkdir -p "$(dirname "$dest_file")"
-    cp "$src_file" "$dest_file"
-  done
+  if [ -d "$API_SRC_DIR/api" ]; then
+    find "$API_SRC_DIR/api" -type f -name "*.html" | while read -r src_file; do
+      rel_path="${src_file#$API_SRC_DIR/}"               # e.g., api/index.html
+      dest_file="$DEST_DIR/$rel_path"
+      mkdir -p "$(dirname "$dest_file")"
+      cp "$src_file" "$dest_file"
+      pathToApiHtmlFile="$rel_path"
+      url="https://micronaut-projects.github.io/${slug}/latest/${pathToApiHtmlFile}"
+      metadata_file="${dest_file}.metadata.json"
+      echo "{\"metadataAttributes\":{\"customized_url_source\":\"$url\"}}" > "$metadata_file"
+    done
+  else
+    echo "🔸 No 'api' folder for $slug, skipping Javadoc HTML copy."
+  fi
 
   for file in index.html configurationreference.html; do
     SRC="$GUIDE_DIR/$file"
