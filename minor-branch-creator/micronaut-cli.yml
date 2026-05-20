@@ -1,5 +1,5 @@
 applicationType: cli
-defaultPackage: minor.branch.creator
+defaultPackage: io.micronaut.scripts.minorbranch
 testFramework: junit
 sourceLanguage: java
 buildTool: gradle_kotlin

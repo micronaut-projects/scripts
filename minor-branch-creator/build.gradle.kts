@@ -1,12 +1,10 @@
 plugins {
-    id("io.micronaut.application") version "5.0.0-M1"
+    id("io.micronaut.application") version "5.0.0"
     id("com.gradleup.shadow") version "9.4.1"
 }
 
 version = "0.1"
-group = "minor.branch.creator"
-
-
+group = "io.micronaut.scripts.minorbranch"
 
 repositories {
     mavenCentral()
@@ -23,19 +21,14 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-
-
 application {
-    mainClass = "minor.branch.creator.MinorBranchCreatorCommand"
+    mainClass = "io.micronaut.scripts.minorbranch.MinorBranchCreatorCommand"
 }
 
 java {
     sourceCompatibility = JavaVersion.toVersion("25")
     targetCompatibility = JavaVersion.toVersion("25")
 }
-
-
-
 
 graalvmNative {
     binaries {
@@ -44,34 +37,18 @@ graalvmNative {
         }
     }
 }
-
-
-
-
 micronaut {
     testRuntime("junit5")
     processing {
         incremental(true)
-        annotations("minor.branch.creator.*")
+        annotations("io.micronaut.scripts.minorbranch.*")
     }
 }
 
 tasks.named<io.micronaut.gradle.docker.MicronautDockerfile>("dockerfile") {
-
     baseImage = "eclipse-temurin:25-jre"
 }
-
-
-
-
-
-
-
 // https://docs.gradle.org/current/userguide/upgrading_major_version_9.html#test_task_fails_when_no_tests_are_discovered
 tasks.withType<AbstractTestTask>().configureEach {
     failOnNoDiscoveredTests = false
 }
-
-
-
-

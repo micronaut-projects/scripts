@@ -1,4 +1,4 @@
-package minor.branch.creator;
+package io.micronaut.scripts.minorbranch;
 
 import io.micronaut.configuration.picocli.PicocliRunner;
 import io.micronaut.context.annotation.Prototype;
