@@ -1,0 +1,6 @@
+applicationType: cli
+defaultPackage: minor.branch.creator
+testFramework: junit
+sourceLanguage: java
+buildTool: gradle_kotlin
+features: [app-name, gradle, http-client, java, junit, logback, micronaut-build, micronaut-configuration-validation-gradle-plugin, picocli, picocli-java-application, picocli-junit, properties, readme, serialization-jackson, shade]
