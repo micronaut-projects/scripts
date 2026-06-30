@@ -1,10 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.jetbrains.kotlin.jvm") version "2.3.21"
     id("org.jetbrains.kotlin.plugin.allopen") version "2.3.21"
     id("com.google.devtools.ksp") version "2.3.7"
+    id("com.gradleup.shadow") version "9.4.1"
     id("io.micronaut.application") version "5.0.1"
 }
 
