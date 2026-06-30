@@ -25,7 +25,6 @@ dependencies {
     implementation("io.micronaut.picocli:micronaut-picocli")
     implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
-    implementation(platform("com.fasterxml.jackson:jackson-bom:2.16.1"))
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-toml")
 
     runtimeOnly("ch.qos.logback:logback-classic")
