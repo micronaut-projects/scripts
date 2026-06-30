@@ -59,7 +59,7 @@ application {
 }
 
 java {
-    sourceCompatibility = JavaVersion.toVersion("21")
+    sourceCompatibility = JavaVersion.toVersion("25")
 }
 
 micronaut {
