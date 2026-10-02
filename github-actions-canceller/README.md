@@ -48,6 +48,18 @@ java -jar build/libs/github-actions-canceller-0.1-all.jar -t ghp_xxxxx micronaut
 ./gh-actions-cancel micronaut-projects/micronaut-core
 ```
 
+### Cancelling all Micronaut repositories
+
+```bash
+export GITHUB_TOKEN=ghp_xxxxx
+./cancel-all-workflows.sh
+```
+
+The script reads repository names from the `slug` entries in
+`micronaut-docs-index/modules.yml`, skips `micronaut-core`, and invokes the
+fat JAR once per repository. Use `./cancel-all-workflows.sh --dry-run` to list
+the runs without cancelling them.
+
 ### Options
 
 ```
