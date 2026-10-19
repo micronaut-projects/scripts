@@ -16,9 +16,11 @@ dependencies {
     annotationProcessor("info.picocli:picocli-codegen")
     annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
     implementation("info.picocli:picocli")
+    implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut.picocli:micronaut-picocli")
     implementation("io.micronaut.serde:micronaut-serde-jackson")
     runtimeOnly("ch.qos.logback:logback-classic")
+    testImplementation("io.micronaut:micronaut-http-server-netty")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
